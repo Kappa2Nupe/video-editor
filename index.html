@@ -79,7 +79,9 @@ button.sm{min-height:40px;padding:0 11px;font-size:14px}
 .panel.on{display:block}
 #bin{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;padding:10px}
 .tile{position:relative;aspect-ratio:1;border-radius:12px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;touch-action:pan-y}
-.tile .th{position:absolute;inset:0;background:center/cover no-repeat}
+.tile .th{position:absolute;inset:0;background:center/cover no-repeat;display:flex;align-items:center;justify-content:center}
+.tile.loading .th{background-color:#2a2e37}.tile.err .th{background-color:#3a1f1f}
+.spin{width:28px;height:28px;border:3px solid rgba(255,255,255,.25);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 .tile.audio .th{background-size:100% 60%;background-color:#123d2a}
 .tile .ty{position:absolute;left:4px;bottom:4px;font-size:11px;font-weight:600;background:rgba(0,0,0,.65);padding:2px 6px;border-radius:7px;pointer-events:none}
 .tile .x{position:absolute;right:2px;top:2px;min-width:30px;min-height:30px;width:30px;height:30px;padding:0;border-radius:15px;background:rgba(0,0,0,.6);border:0;font-size:17px}
@@ -333,7 +335,7 @@ function ensureAudio(){if(AC)return AC;const C=window.AudioContext||window.webki
   try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
   return AC;}
 function unlockAudio(){const a=ensureAudio();if(!a)return;if(a.state!=='running')a.resume().catch(()=>{});try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);}catch(e){}}
-function decodeAudio(a,blob){const ac=ensureAudio();if(!ac||blob.size>400*1024*1024)return Promise.resolve(null);
+function decodeAudio(a,blob){const ac=ensureAudio();if(!ac||blob.size>(a.type==='video'?150:250)*1024*1024)return Promise.resolve(null);
   return blob.arrayBuffer().then(buf=>new Promise(res=>{let done=false;const ok=b=>{if(done)return;done=true;res(b);},no=()=>{if(done)return;done=true;res(null);};
     try{const p=ac.decodeAudioData(buf,ok,no);if(p&&p.then)p.then(ok,no);}catch(e){no();}})).then(b=>{if(b){RT.abuf[a.id]=b;a.hasAudio=true;}return b;}).catch(()=>null);}
 function waveURL(b){const w=600,h=60,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');const d=b.getChannelData(0);const step=Math.max(1,Math.floor(d.length/w));g.fillStyle='rgba(190,255,220,.85)';
@@ -432,7 +434,7 @@ function showMarker(idx){if(idx<0){marker.style.display='none';return;}const lis
   const tr=G.track===S.video?$('#vtrack'):$('#atrack');marker.style.display='block';marker.style.left=(pad()+bt*S.pps)+'px';marker.style.top=(tr.offsetTop-3)+'px';marker.style.height=(tr.offsetHeight+6)+'px';}
 function startDrag(){const g=G;let thumb,label;
   if(g.src==='clip'){const c=findClip(g.id);if(!c){G=null;return;}g.track=S.video.includes(c)?S.video:S.audio;thumb=clipThumb(c);label=clipName(c);g.el.classList.add('dragging');}
-  else{const a=S.assets.find(x=>x.id===g.aid);if(!a){G=null;return;}g.track=a.type==='audio'?S.audio:S.video;thumb=a.thumb||a.wave;label=a.name;}
+  else{const a=S.assets.find(x=>x.id===g.aid);if(!a||a.loading||a.err){G=null;return;}g.track=a.type==='audio'?S.audio:S.video;thumb=a.thumb||a.wave;label=a.name;}
   g.type='drag';try{navigator.vibrate&&navigator.vibrate(15);}catch(e){}
   const gh=document.createElement('div');gh.className='ghost';gh.style.backgroundImage=`url("${thumb}")`;gh.innerHTML=`<span>${esc(label)}</span>`;document.body.appendChild(gh);g.ghost=gh;g.lx=g.x;g.ly=g.y;moveGhost();g.raf=requestAnimationFrame(dragAuto);}
 function moveGhost(){const g=G;g.ghost.style.transform=`translate(${g.lx-40}px,${g.ly-70}px)`;const ok=overTL(g.ly);g.ghost.classList.toggle('ok',ok);showMarker(ok?dropIdx():-1);}
@@ -458,7 +460,7 @@ $('#bin').addEventListener('pointerdown',e=>gDown(e,'bin'));
 window.addEventListener('pointermove',e=>{if(!G)return;if(G.type==='press'){if(Math.hypot(e.clientX-G.x,e.clientY-G.y)>9){G.moved=true;clearTimeout(G.timer);}}
   else if(G.type==='trim')moveTrim(e);else if(G.type==='drag'){G.lx=e.clientX;G.ly=e.clientY;moveGhost();}});
 window.addEventListener('pointerup',e=>{if(!G)return;const g=G;clearTimeout(g.timer);
-  if(g.type==='press'){G=null;if(g.moved)return;if(g.src==='clip')selectClip(g.id);else if(g.src==='asset'){const a=S.assets.find(x=>x.id===g.aid);if(a)addAsset(a);}else if(g.src==='empty'&&S.sel)selectClip(null);return;}
+  if(g.type==='press'){G=null;if(g.moved)return;if(g.src==='clip')selectClip(g.id);else if(g.src==='asset'){const a=S.assets.find(x=>x.id===g.aid);if(a&&a.loading)toast('Still loading – one moment…');else if(a&&a.err)toast('This file can’t be opened – tap × to remove it');else if(a)addAsset(a);}else if(g.src==='empty'&&S.sel)selectClip(null);return;}
   if(g.type==='trim'){G=null;endTrim();return;}if(g.type==='drag'){g.lx=e.clientX;g.ly=e.clientY;endDrag(true);}G=null;});
 window.addEventListener('pointercancel',()=>{if(!G)return;clearTimeout(G.timer);if(G.type==='drag')endDrag(false);if(G.type==='trim')endTrim();G=null;});
 document.addEventListener('touchmove',e=>{if(G&&(G.type==='drag'||G.type==='trim'))e.preventDefault();},{passive:false});
@@ -476,7 +478,8 @@ function showTab(t){S.tab=t;$('#app').classList.remove('collapsed');document.que
 $('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.tab===S.tab&&!$('#app').classList.contains('collapsed')){$('#app').classList.add('collapsed');setTimeout(fitCanvas,0);return;}showTab(b.dataset.tab);});
 function renderBin(){const g=$('#bin');g.querySelectorAll('.tile.asset').forEach(e=>e.remove());
   for(const a of S.assets){const d=document.createElement('div');d.className='tile asset '+a.type;d.dataset.aid=a.id;
-    d.innerHTML=`<div class="th" style='background-image:url("${a.thumb||a.wave||''}")'></div><span class="ty">${ICON[a.type]} ${a.type==='image'?'Photo':fmtS(a.duration)}</span><button class="x" data-del="${a.id}" aria-label="Remove">×</button>`;g.appendChild(d);}
+    const lbl=a.loading?'⏳ Loading…':a.err?'⚠️ Can’t open':(a.type==='image'?'Photo':fmtS(a.duration));if(a.loading)d.classList.add('loading');if(a.err)d.classList.add('err');
+    d.innerHTML=`<div class="th" style='background-image:url("${a.thumb||a.wave||''}")'>${a.loading?'<div class="spin"></div>':''}</div><span class="ty">${ICON[a.type]||'📄'} ${lbl}</span><button class="x" data-del="${a.id}" aria-label="Remove">×</button>`;g.appendChild(d);}
   $('#binHint').innerHTML=S.assets.length?'Tap an item to add it at the white line · hold &amp; drag to drop it anywhere on the timeline.':'Tap <b>Import</b> to pick videos, photos or music from your phone. Then tap any item to add it to the timeline (or hold &amp; drag it there).';}
 $('#bin').addEventListener('click',e=>{const x=e.target.closest('[data-del]');if(x){e.stopPropagation();removeAsset(x.dataset.del);}});
 function renderTplCards(){const [W,H]=canvasSize();const ch=W>H?84:W===H?104:150,cw=Math.round(ch*W/H);
@@ -526,23 +529,33 @@ function loadImgEl(url){return new Promise((res,rej)=>{const i=new Image();i.onl
 function scaledCanvas(src,sw,sh,max){const s=Math.min(1,max/Math.max(sw,sh));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(sw*s));c.height=Math.max(1,Math.round(sh*s));c.getContext('2d').drawImage(src,0,0,c.width,c.height);return c;}
 function waitEv(el,ev,ms){return new Promise(res=>{let t;const f=()=>{clearTimeout(t);el.removeEventListener(ev,f);res(true);};el.addEventListener(ev,f);t=setTimeout(()=>{el.removeEventListener(ev,f);res(false);},ms);});}
 async function videoInfo(url){const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';$('#vbox').appendChild(v);
-  const p=waitEv(v,'loadedmetadata',15000);v.src=url;await p;let dur=v.duration;
+  const p=waitEv(v,'loadedmetadata',10000);v.src=url;try{v.load();}catch(e){}await p;let dur=v.duration;
   if(!isFinite(dur)){const q=waitEv(v,'durationchange',4000);try{v.currentTime=1e7;}catch(e){}await q;dur=v.duration;}
-  const t=Math.min(.5,(isFinite(dur)&&dur?dur:1)/4);const s=waitEv(v,'seeked',5000);try{v.currentTime=t;}catch(e){}await s;
+  const t=Math.min(.5,(isFinite(dur)&&dur?dur:1)/4);const s=waitEv(v,'seeked',3000);try{v.currentTime=t;}catch(e){}await s;
   if(v.readyState<2){try{await v.play();v.pause();}catch(e){}await waitEv(v,'loadeddata',1500);}
   let thumb='';try{if(v.videoWidth)thumb=scaledCanvas(v,v.videoWidth,v.videoHeight,200).toDataURL('image/jpeg',.7);}catch(e){}
   const info={duration:isFinite(dur)?dur:0,w:v.videoWidth,h:v.videoHeight,thumb};v.removeAttribute('src');v.load();v.remove();return info;}
 async function loadAsset(a,blob,isNew){const url=URL.createObjectURL(blob);RT.url[a.id]=url;
   if(a.type==='image'){const img=await loadImgEl(url);a.w=img.naturalWidth;a.h=img.naturalHeight;RT.img[a.id]=scaledCanvas(img,a.w,a.h,1920);if(isNew||!a.thumb)a.thumb=scaledCanvas(img,a.w,a.h,200).toDataURL('image/jpeg',.75);}
-  else if(a.type==='video'){if(isNew||!a.duration){const i=await videoInfo(url);a.duration=i.duration;a.w=i.w;a.h=i.h;a.thumb=i.thumb||a.thumb;}const b=decodeAudio(a,blob);if(!a.duration){await b;a.duration=(RT.abuf[a.id]||{}).duration||5;}}
+  else if(a.type==='video'){if(isNew||!a.duration){const i=await videoInfo(url);a.duration=i.duration;a.w=i.w;a.h=i.h;a.thumb=i.thumb||a.thumb;}if(isNew&&blob.size>150*1024*1024)setTimeout(()=>toast('Big video: its own sound is skipped in this version (music still works)'),2500);const b=decodeAudio(a,blob);if(!a.duration){await b;a.duration=(RT.abuf[a.id]||{}).duration||5;}}
   else{const b=await decodeAudio(a,blob);if(!b)throw new Error('audio decode failed');a.duration=b.duration;if(!a.wave)a.wave=waveURL(b);}}
 function guessType(f){if(f.type&&/^(video|image|audio)\//.test(f.type))return f.type.split('/')[0];const x=(f.name.split('.').pop()||'').toLowerCase();if(['mp4','mov','m4v','webm'].includes(x))return 'video';if(['jpg','jpeg','png','gif','webp','heic'].includes(x))return 'image';if(['mp3','m4a','aac','wav','ogg','opus','flac'].includes(x))return 'audio';return '';}
-async function importFiles(files){unlockAudio();let n=0;for(const f of files){const type=guessType(f);if(!type)continue;
-    const a={id:uid(),type,name:f.name.replace(/\.[^.]+$/,''),duration:0,w:0,h:0,thumb:'',hasAudio:false};toast(`Importing ${f.name}…`);
-    try{await loadAsset(a,f,true);S.assets.push(a);renderBin();n++;idbPut('files',a.id,f).catch(()=>toast('Note: this file is too big to keep after closing the app'));}
-    catch(e){console.warn(e);toast(`Couldn't open ${f.name}`);}}
-  save();if(n)toast(`✓ ${n} item${n>1?'s':''} imported – tap to add`);}
-$('#file').addEventListener('change',e=>{const fs=[...e.target.files];e.target.value='';importFiles(fs);});
+async function importFiles(files){try{unlockAudio();}catch(e){}
+  const jobs=[];
+  for(const f of files){const type=guessType(f)||'video';
+    const a={id:uid(),type,name:(f.name||'clip').replace(/\.[^.]+$/,''),duration:0,w:0,h:0,thumb:'',hasAudio:false,loading:true};
+    S.assets.push(a);jobs.push([a,f]);}
+  renderBin();showTab('media');
+  if(jobs.length)toast(`Adding ${jobs.length} item${jobs.length>1?'s':''}…`);
+  let n=0;
+  for(const [a,f] of jobs){
+    try{await loadAsset(a,f,true);a.loading=false;n++;}
+    catch(e){console.warn(e);a.loading=false;a.err=true;toast(`Couldn't open ${f.name||'that file'}`);}
+    renderBin();
+    if(!a.err)idbPut('files',a.id,f).catch(()=>toast('Note: this file is too big to keep after closing the app'));
+  }
+  save();if(n)toast(`✓ ${n} item${n>1?'s':''} ready – tap to add`);}
+$('#file').addEventListener('change',e=>{const inp=e.target;const fs=Array.from(inp.files||[]);if(!fs.length)return;importFiles(fs).finally(()=>{try{inp.value='';}catch(_){}});});
 function removeAsset(id){if(!confirm('Remove this from your library? It will also be removed from the timeline.'))return;pushUndo();S.assets=S.assets.filter(a=>a.id!==id);
   S.video=S.video.filter(c=>c.assetId!==id);S.audio=S.audio.filter(c=>c.assetId!==id);for(const k in RT.vids)if(k.startsWith(id+':')){RT.vids[k].remove();delete RT.vids[k];}
   try{URL.revokeObjectURL(RT.url[id]);}catch(e){}delete RT.url[id];delete RT.img[id];delete RT.abuf[id];idbDel('files',id).catch(()=>{});if(!findClip(S.sel))S.sel=null;renderBin();commit();renderInspector();}
@@ -555,7 +568,7 @@ let DBP=null;function db(){return DBP||(DBP=new Promise((res,rej)=>{const r=inde
 async function idbPut(st,k,v){const d=await db();return new Promise((res,rej)=>{const tx=d.transaction(st,'readwrite');tx.objectStore(st).put(v,k);tx.oncomplete=()=>res();tx.onerror=tx.onabort=()=>rej(tx.error);});}
 async function idbGet(st,k){const d=await db();return new Promise((res,rej)=>{const q=d.transaction(st).objectStore(st).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
 async function idbDel(st,k){const d=await db();return new Promise((res,rej)=>{const tx=d.transaction(st,'readwrite');tx.objectStore(st).delete(k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
-function save(){clearTimeout(RT.saveT);RT.saveT=setTimeout(()=>{const data=JSON.stringify({v:1,aspect:S.aspect,res:S.res,pps:S.pps,assets:S.assets,video:S.video,audio:S.audio},(k,v)=>k[0]==='_'?undefined:v);
+function save(){clearTimeout(RT.saveT);RT.saveT=setTimeout(()=>{const data=JSON.stringify({v:1,aspect:S.aspect,res:S.res,pps:S.pps,assets:S.assets.filter(a=>!a.loading&&!a.err),video:S.video,audio:S.audio},(k,v)=>k[0]==='_'?undefined:v);
   idbPut('kv','project',data).catch(()=>{try{localStorage.setItem('pocket-studio',data);}catch(e){}});},500);}
 async function restore(){let raw=null;try{raw=await idbGet('kv','project');}catch(e){}if(!raw){try{raw=localStorage.getItem('pocket-studio');}catch(e){}}if(!raw)return;
   try{const p=JSON.parse(raw);S.aspect=p.aspect||S.aspect;S.res=p.res||S.res;S.pps=p.pps||S.pps;
@@ -593,6 +606,7 @@ $('#resShare').onclick=async()=>{try{await navigator.share({files:[RT.resFile],t
 $('#resClose').onclick=()=>{$('#resultOv').classList.remove('on');$('#resVideo').pause();};
 
 /* ---------------- misc wiring ---------------- */
+window.addEventListener('error',e=>{try{toast('Oops: '+(e.message||'something went wrong'));}catch(_){}});window.addEventListener('unhandledrejection',e=>{console.warn(e.reason);});
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200);}
 function fitCanvas(){const r=$('#previewWrap').getBoundingClientRect();const s=Math.min((r.width-12)/cv.width,(r.height-12)/cv.height);if(s>0){cv.style.width=Math.floor(cv.width*s)+'px';cv.style.height=Math.floor(cv.height*s)+'px';}}
 function applyAspect(){const [w,h]=canvasSize();cv.width=w;cv.height=h;RT.tplCache={};fitCanvas();renderTplCards();renderTimeline();requestRender();}
