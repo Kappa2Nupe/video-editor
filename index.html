@@ -86,7 +86,8 @@ button.sm{min-height:40px;padding:0 11px;font-size:14px}
 .tile .ty{position:absolute;left:4px;bottom:4px;font-size:11px;font-weight:600;background:rgba(0,0,0,.65);padding:2px 6px;border-radius:7px;pointer-events:none}
 .tile .x{position:absolute;right:2px;top:2px;min-width:30px;min-height:30px;width:30px;height:30px;padding:0;border-radius:15px;background:rgba(0,0,0,.6);border:0;font-size:17px}
 .tile.import{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--accent);color:#141414;font-weight:700;border:0}
-.tile.import b{font-size:34px;line-height:1}
+.tile.import b{font-size:30px;line-height:1.1}
+.tile.import{text-align:center;font-size:13px;padding:4px}.tile.import.music{background:var(--aud);color:#fff}.tile.import.any{background:var(--panel2);color:var(--text);border:1px dashed var(--muted)}
 .tile.import input{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:0;cursor:pointer}
 .note{color:var(--muted);font-size:13px;margin:6px 0 0}
 .phint{padding:10px 12px 0;color:var(--muted);font-size:13px}
@@ -140,7 +141,7 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
   <div id="previewWrap">
     <canvas id="preview" width="720" height="1280"></canvas>
     <div id="emptyHint"><div class="t">Let's make a video 🎬</div>
-      <ol><li>Tap <b>＋ Import</b> to add videos, photos &amp; music</li><li>Tap them to put them on the timeline</li><li>Add an <b>Intro</b> and <b>Outro</b></li><li>Tap <b>Export</b> to save your video</li></ol></div>
+      <ol><li>Tap <b>＋ Videos &amp; Photos</b> to add clips, and <b>♫ Add Music</b> for songs</li><li>Tap them to put them on the timeline</li><li>Add an <b>Intro</b> and <b>Outro</b></li><li>Tap <b>Export</b> to save your video</li></ol></div>
   </div>
   <div id="transport">
     <div id="time"><b>0:00.0</b> / 0:00.0</div>
@@ -164,7 +165,7 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
   </nav>
   <div id="panels">
     <div class="panel on" id="p-media">
-      <div id="bin"><div class="tile import"><b>＋</b>Import<input type="file" id="file" accept="video/*,image/*,audio/*" multiple></div></div>
+      <div id="bin"><div class="tile import"><b>＋</b>Videos &amp; Photos<input type="file" id="file" accept="video/*,image/*" multiple aria-label="Import videos and photos"></div><div class="tile import music"><b>♫</b>Add Music<input type="file" id="fileMusic" accept="audio/*,.mp3,.m4a,.aac,.wav,.aif,.aiff,.caf,.flac,.ogg,.opus,.m4b,audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/x-wav,audio/aac,audio/aiff,audio/x-aiff,audio/x-caf,audio/flac,audio/x-flac,audio/mp3,audio/mpeg3,audio/x-mpeg" multiple aria-label="Add music"></div><div class="tile import any"><b>📁</b>Any file<input type="file" id="fileAny" multiple aria-label="Import any file"></div></div>
       <div class="phint" id="binHint"></div>
     </div>
     <div class="panel" id="p-intro"><div class="phint">Tap a style to put it at the <b>start</b> of your video. You can change the words and colors after.</div><div class="cards" id="introCards"></div></div>
@@ -181,7 +182,7 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
   <p class="note">On iPhone: tap <b>Save to Photos / Share</b>, then choose <b>Save Video</b>.</p></div></div>
 <div class="modal" id="helpOv"><div class="sheet"><h3>How it works</h3>
   <div class="note" style="font-size:15px;line-height:1.6;color:var(--text)">
-  <b>1. Import</b> – Media tab → ＋ Import. Pick videos, photos, music.<br>
+  <b>1. Import</b> – Media tab → <b>＋ Videos &amp; Photos</b> opens your Photos library.<br><b>♫ Add Music</b> opens the Files app: pick MP3, M4A, WAV, AIFF… songs. They go straight onto the music track. (Songs from the Apple Music app are copy-protected and can’t be used – save music to Files first, e.g. from iCloud Drive or a download.) If a file is greyed out, try <b>📁 Any file</b>.<br>
   <b>2. Add</b> – tap an item to drop it on the timeline at the white line. Or hold it and drag it onto the timeline.<br>
   <b>3. Move around</b> – swipe the timeline left/right to scrub. Pinch (or −/+) to zoom.<br>
   <b>4. Edit a clip</b> – tap it. Drag the yellow edges to trim. Hold &amp; drag to move it. ✂ splits at the white line, 🗑 deletes, ↶ undoes.<br>
@@ -409,8 +410,8 @@ function insertIdx(track){layout();if(!track.length)return 0;const t=S.t;let idx
   if(track===S.video){if(track[0]&&track[0].role==='intro')idx=Math.max(1,idx);const L=track.length;if(track[L-1]&&track[L-1].role==='outro')idx=Math.min(L-1,idx);}return idx;}
 function newClip(a){if(a.type==='audio')return {id:uid(),kind:'media',type:'audio',assetId:a.id,in:0,dur:a.duration,vol:1};
   return {id:uid(),kind:'media',type:a.type,assetId:a.id,in:0,dur:a.type==='video'?a.duration:3,motion:a.type==='image'?'dollyIn':'none',intensity:.4,easing:'smooth',trans:'none',transDur:.6,fadeOut:false,fit:'cover',vol:1};}
-function addAsset(a,idx){if(S.playing)pause();pushUndo();const c=newClip(a);const tr=a.type==='audio'?S.audio:S.video;if(idx==null)idx=insertIdx(tr);tr.splice(idx,0,c);S.sel=c.id;layout();commit();setTime(c._start+c.dur);renderInspector();
-  toast(`${ICON[a.type]} Added to timeline`);}
+function addAsset(a,idx,o){o=o||{};if(S.playing)pause();pushUndo();const c=newClip(a);const tr=a.type==='audio'?S.audio:S.video;if(idx==null)idx=insertIdx(tr);tr.splice(idx,0,c);if(!o.keepTime)S.sel=c.id;layout();commit();if(!o.keepTime)setTime(c._start+c.dur);renderInspector();
+  if(!o.quiet)toast(`${ICON[a.type]} Added to timeline`);}
 function addTemplate(id){if(S.playing)pause();const T=TPL[id];pushUndo();const c={id:uid(),kind:'tpl',tpl:id,role:T.role,p:Object.assign({},T.def),dur:T.dur,motion:id==='titleCard'?'dollyIn':'none',intensity:.3,easing:'smooth',trans:'none',transDur:.6,fadeOut:false};
   if(T.role==='intro'){if(S.video[0]&&S.video[0].role==='intro')S.video[0]=c;else{S.video.unshift(c);const n=S.video[1];if(n&&n.trans==='none')n.trans='crossfade';}}
   else{const L=S.video.length;c.fadeOut=true;if(L&&S.video[L-1].role==='outro'){c.trans=S.video[L-1].trans;S.video[L-1]=c;}else{if(L)c.trans='crossfade';S.video.push(c);}}
@@ -460,7 +461,7 @@ $('#bin').addEventListener('pointerdown',e=>gDown(e,'bin'));
 window.addEventListener('pointermove',e=>{if(!G)return;if(G.type==='press'){if(Math.hypot(e.clientX-G.x,e.clientY-G.y)>9){G.moved=true;clearTimeout(G.timer);}}
   else if(G.type==='trim')moveTrim(e);else if(G.type==='drag'){G.lx=e.clientX;G.ly=e.clientY;moveGhost();}});
 window.addEventListener('pointerup',e=>{if(!G)return;const g=G;clearTimeout(g.timer);
-  if(g.type==='press'){G=null;if(g.moved)return;if(g.src==='clip')selectClip(g.id);else if(g.src==='asset'){const a=S.assets.find(x=>x.id===g.aid);if(a&&a.loading)toast('Still loading – one moment…');else if(a&&a.err)toast('This file can’t be opened – tap × to remove it');else if(a)addAsset(a);}else if(g.src==='empty'&&S.sel)selectClip(null);return;}
+  if(g.type==='press'){G=null;if(g.moved)return;if(g.src==='clip')selectClip(g.id);else if(g.src==='asset'){const a=S.assets.find(x=>x.id===g.aid);if(a&&a.loading)toast('Still loading – one moment…');else if(a&&a.err)toast((a.errMsg||'This file can’t be opened')+' (tap × to remove it)',6000);else if(a)addAsset(a);}else if(g.src==='empty'&&S.sel)selectClip(null);return;}
   if(g.type==='trim'){G=null;endTrim();return;}if(g.type==='drag'){g.lx=e.clientX;g.ly=e.clientY;endDrag(true);}G=null;});
 window.addEventListener('pointercancel',()=>{if(!G)return;clearTimeout(G.timer);if(G.type==='drag')endDrag(false);if(G.type==='trim')endTrim();G=null;});
 document.addEventListener('touchmove',e=>{if(G&&(G.type==='drag'||G.type==='trim'))e.preventDefault();},{passive:false});
@@ -480,7 +481,7 @@ function renderBin(){const g=$('#bin');g.querySelectorAll('.tile.asset').forEach
   for(const a of S.assets){const d=document.createElement('div');d.className='tile asset '+a.type;d.dataset.aid=a.id;
     const lbl=a.loading?'⏳ Loading…':a.err?'⚠️ Can’t open':(a.type==='image'?'Photo':fmtS(a.duration));if(a.loading)d.classList.add('loading');if(a.err)d.classList.add('err');
     d.innerHTML=`<div class="th" style='background-image:url("${a.thumb||a.wave||''}")'>${a.loading?'<div class="spin"></div>':''}</div><span class="ty">${ICON[a.type]||'📄'} ${lbl}</span><button class="x" data-del="${a.id}" aria-label="Remove">×</button>`;g.appendChild(d);}
-  $('#binHint').innerHTML=S.assets.length?'Tap an item to add it at the white line · hold &amp; drag to drop it anywhere on the timeline.':'Tap <b>Import</b> to pick videos, photos or music from your phone. Then tap any item to add it to the timeline (or hold &amp; drag it there).';}
+  $('#binHint').innerHTML=S.assets.length?'Tap an item to add it at the white line · hold &amp; drag to drop it anywhere on the timeline.':'Tap <b>Videos &amp; Photos</b> to pick from your Photos. Tap <b>Add Music</b> to pick songs from the Files app (MP3, M4A, WAV…) – they go straight onto the music track. Can’t find a file? Use <b>Any file</b>. Then tap any item to add it to the timeline (or hold &amp; drag it there).';}
 $('#bin').addEventListener('click',e=>{const x=e.target.closest('[data-del]');if(x){e.stopPropagation();removeAsset(x.dataset.del);}});
 function renderTplCards(){const [W,H]=canvasSize();const ch=W>H?84:W===H?104:150,cw=Math.round(ch*W/H);
   ['intro','outro'].forEach(role=>{const box=$('#'+role+'Cards');box.innerHTML='';Object.keys(TPL).filter(k=>TPL[k].role===role).forEach(k=>{const b=document.createElement('button');b.className='tcard';b.dataset.tpl=k;
@@ -539,23 +540,32 @@ async function loadAsset(a,blob,isNew){const url=URL.createObjectURL(blob);RT.ur
   if(a.type==='image'){const img=await loadImgEl(url);a.w=img.naturalWidth;a.h=img.naturalHeight;RT.img[a.id]=scaledCanvas(img,a.w,a.h,1920);if(isNew||!a.thumb)a.thumb=scaledCanvas(img,a.w,a.h,200).toDataURL('image/jpeg',.75);}
   else if(a.type==='video'){if(isNew||!a.duration){const i=await videoInfo(url);a.duration=i.duration;a.w=i.w;a.h=i.h;a.thumb=i.thumb||a.thumb;}if(isNew&&blob.size>150*1024*1024)setTimeout(()=>toast('Big video: its own sound is skipped in this version (music still works)'),2500);const b=decodeAudio(a,blob);if(!a.duration){await b;a.duration=(RT.abuf[a.id]||{}).duration||5;}}
   else{const b=await decodeAudio(a,blob);if(!b)throw new Error('audio decode failed');a.duration=b.duration;if(!a.wave)a.wave=waveURL(b);}}
-function guessType(f){if(f.type&&/^(video|image|audio)\//.test(f.type))return f.type.split('/')[0];const x=(f.name.split('.').pop()||'').toLowerCase();if(['mp4','mov','m4v','webm'].includes(x))return 'video';if(['jpg','jpeg','png','gif','webp','heic'].includes(x))return 'image';if(['mp3','m4a','aac','wav','ogg','opus','flac'].includes(x))return 'audio';return '';}
-async function importFiles(files){try{unlockAudio();}catch(e){}
+const EXT={video:['mp4','mov','m4v','webm','3gp','qt','mkv','avi'],image:['jpg','jpeg','png','gif','webp','heic','heif','bmp','avif'],audio:['mp3','m4a','aac','wav','wave','aif','aiff','aifc','caf','flac','ogg','oga','opus','m4b','m4r','amr','wma','alac']};
+function extOf(f){const n=String(f.name||'');const i=n.lastIndexOf('.');return i>=0?n.slice(i+1).toLowerCase():'';}
+function guessType(f,hint){const m=String(f.type||'').toLowerCase();const x=extOf(f);
+  if(/^(video|image|audio)\//.test(m)){const t=m.split('/')[0];
+    // an audio extension wins over a video MIME (e.g. .m4a reported as video/mp4)
+    if(t==='video'&&EXT.audio.includes(x))return 'audio';
+    if(hint==='audio'&&t==='video'&&!EXT.video.includes(x))return 'audio';
+    return t;}
+  for(const t of ['audio','image','video'])if(EXT[t].includes(x))return t;
+  return hint||'';}
+async function importFiles(files,hint){try{unlockAudio();}catch(e){}
   const jobs=[];
-  for(const f of files){const type=guessType(f)||'video';
-    const a={id:uid(),type,name:(f.name||'clip').replace(/\.[^.]+$/,''),duration:0,w:0,h:0,thumb:'',hasAudio:false,loading:true};
+  for(const f of files){const g=guessType(f,hint);const type=g||'video';
+    const a={id:uid(),type,name:(f.name||'clip').replace(/\.[^.]+$/,''),duration:0,w:0,h:0,thumb:'',hasAudio:false,loading:true,_guess:!g};
     S.assets.push(a);jobs.push([a,f]);}
   renderBin();showTab('media');
   if(jobs.length)toast(`Adding ${jobs.length} item${jobs.length>1?'s':''}…`);
-  let n=0;
+  let n=0,added=0;
   for(const [a,f] of jobs){
-    try{await loadAsset(a,f,true);a.loading=false;n++;}
-    catch(e){console.warn(e);a.loading=false;a.err=true;toast(`Couldn't open ${f.name||'that file'}`);}
+    try{try{await loadAsset(a,f,true);}catch(e1){if(a._guess||a.type==='video'){a.type='audio';await loadAsset(a,f,true);}else throw e1;}if(a.type==='video'&&!a.w&&RT.abuf[a.id]){a.type='audio';a.thumb='';await loadAsset(a,f,true);}a.loading=false;n++;if(a.type==='audio'){addAsset(a,S.audio.length,{keepTime:true,quiet:true});added++;}}
+    catch(e){console.warn(e);a.loading=false;a.err=true;const x=extOf(f);const msg=x==='flac'?`This FLAC file (${f.name}) can’t be played by Safari on this device. Please convert it to M4A or MP3 and try again.`:a.type==='audio'?`Couldn’t read the song ${f.name||''} – Safari doesn’t support this audio format. MP3, M4A, WAV or FLAC work best.`:`Couldn't open ${f.name||'that file'}`;a.errMsg=msg;toast(msg,6000);}
     renderBin();
     if(!a.err)idbPut('files',a.id,f).catch(()=>toast('Note: this file is too big to keep after closing the app'));
   }
-  save();if(n)toast(`✓ ${n} item${n>1?'s':''} ready – tap to add`);}
-$('#file').addEventListener('change',e=>{const inp=e.target;const fs=Array.from(inp.files||[]);if(!fs.length)return;importFiles(fs).finally(()=>{try{inp.value='';}catch(_){}});});
+  save();if(added)toast(`🎵 ${added} song${added>1?'s':''} added to the music track`);else if(n)toast(`✓ ${n} item${n>1?'s':''} ready – tap to add`);}
+[['#file',''],['#fileMusic','audio'],['#fileAny','']].forEach(([sel,hint])=>$(sel).addEventListener('change',e=>{const inp=e.target;const fs=Array.from(inp.files||[]);if(!fs.length)return;importFiles(fs,hint).finally(()=>{try{inp.value='';}catch(_){}});}));
 function removeAsset(id){if(!confirm('Remove this from your library? It will also be removed from the timeline.'))return;pushUndo();S.assets=S.assets.filter(a=>a.id!==id);
   S.video=S.video.filter(c=>c.assetId!==id);S.audio=S.audio.filter(c=>c.assetId!==id);for(const k in RT.vids)if(k.startsWith(id+':')){RT.vids[k].remove();delete RT.vids[k];}
   try{URL.revokeObjectURL(RT.url[id]);}catch(e){}delete RT.url[id];delete RT.img[id];delete RT.abuf[id];idbDel('files',id).catch(()=>{});if(!findClip(S.sel))S.sel=null;renderBin();commit();renderInspector();}
@@ -607,7 +617,7 @@ $('#resClose').onclick=()=>{$('#resultOv').classList.remove('on');$('#resVideo')
 
 /* ---------------- misc wiring ---------------- */
 window.addEventListener('error',e=>{try{toast('Oops: '+(e.message||'something went wrong'));}catch(_){}});window.addEventListener('unhandledrejection',e=>{console.warn(e.reason);});
-let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200);}
+let toastT;function toast(m,ms){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms||2200);}
 function fitCanvas(){const r=$('#previewWrap').getBoundingClientRect();const s=Math.min((r.width-12)/cv.width,(r.height-12)/cv.height);if(s>0){cv.style.width=Math.floor(cv.width*s)+'px';cv.style.height=Math.floor(cv.height*s)+'px';}}
 function applyAspect(){const [w,h]=canvasSize();cv.width=w;cv.height=h;RT.tplCache={};fitCanvas();renderTplCards();renderTimeline();requestRender();}
 $('#btnPlay').onclick=()=>{if(S.exporting)return;S.playing?pause():play();};
