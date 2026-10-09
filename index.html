@@ -6,9 +6,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pocket Studio">
+<meta name="apple-mobile-web-app-title" content="Buddah Bear Studio">
+<meta name="application-name" content="Buddah Bear Studio">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#0e0f12">
-<title>Pocket Studio – Video Editor</title>
+<title>Buddah Bear Studio – Video Editor</title>
 <style>
 :root{--bg:#0e0f12;--panel:#16181d;--panel2:#20232a;--line:#2c3039;--text:#eceef2;--muted:#8d93a0;--accent:#ff8a1f;--sel:#ffd60a;--vid:#2f6fed;--img:#1f8f8f;--tpl:#8e44ec;--aud:#1f9d62;--danger:#ff453a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -19,8 +25,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
   grid-template-areas:"h" "p" "tr" "tl" "tb" "pn"}
 #app.collapsed{--panelH:0px}
 header{grid-area:h;display:flex;align-items:center;gap:8px;padding:0 10px}
-.logo{font-weight:800;font-size:18px;flex:1;letter-spacing:-.02em;white-space:nowrap}
-.logo span{color:var(--accent)}
+.logo{flex:1;min-width:0;display:flex;align-items:flex-end;white-space:nowrap;font-family:Fredoka,ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Nunito",system-ui,sans-serif;font-weight:600;font-size:19px;letter-spacing:.005em;line-height:1;padding-bottom:9px}
+.logo .wm{color:#fff3ea}
+.logo .st{color:#ff4d5e}
+.logo .bear{height:1.95em;width:auto;flex:none;margin-left:-.1em;margin-bottom:-.04em;transform:rotate(-8deg);transform-origin:30% 100%;filter:drop-shadow(-1.2px 0 0 #0e0f12) drop-shadow(0 0 .6px #0e0f12) drop-shadow(0 1px 1.5px rgba(0,0,0,.45));overflow:visible}
 button,.btn{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:12px;min-height:44px;min-width:44px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;touch-action:manipulation}
 button:active,.btn:active{transform:scale(.96);filter:brightness(1.2)}
 button.primary{background:var(--accent);border-color:var(--accent);color:#141414;font-weight:700}
@@ -34,6 +42,7 @@ button.sm{min-height:40px;padding:0 11px;font-size:14px}
 #emptyHint .t{font-size:19px;font-weight:700;margin-bottom:8px}
 #emptyHint ol{text-align:left;margin:0;padding-left:22px;font-size:14px;line-height:1.6;color:var(--muted)}
 #emptyHint b{color:var(--text)}
+#emptyHint .love{margin-top:14px;font:600 13px Fredoka,ui-rounded,system-ui,sans-serif;color:#ff8a95;opacity:.85}
 #transport{grid-area:tr;display:flex;align-items:center;gap:6px;padding:0 8px;border-top:1px solid var(--line)}
 #time{font:600 13px ui-monospace,Menlo,monospace;color:var(--muted);flex:1;white-space:nowrap;min-width:0;overflow:hidden}
 #time b{color:var(--text)}
@@ -134,14 +143,14 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
 <body>
 <div id="app">
   <header>
-    <div class="logo">Pocket<span>Studio</span></div>
+    <div class="logo" aria-label="Buddah Bear Studio"><span class="wm">Buddah Bear <span class="st">Studio</span></span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 130" class="bear" aria-hidden="true"><defs><radialGradient id="bbFur" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#ff6b78"/><stop offset=".5" stop-color="#e3293f"/><stop offset="1" stop-color="#a0142a"/></radialGradient><radialGradient id="bbBelly" cx="45%" cy="35%" r="70%"><stop offset="0" stop-color="#ffb3b9"/><stop offset="1" stop-color="#f2717e"/></radialGradient><radialGradient id="bbMuz" cx="45%" cy="35%" r="75%"><stop offset="0" stop-color="#fff0ee"/><stop offset="1" stop-color="#f4b2b4"/></radialGradient></defs><g transform="rotate(-9 60 126)" stroke="#8a1124" stroke-width="2" stroke-linejoin="round"><ellipse cx="62" cy="92" rx="30" ry="28" fill="url(#bbFur)"/><ellipse cx="62" cy="97" rx="18" ry="16.5" fill="url(#bbBelly)" stroke="none"/><path d="M62 104c-6-4.2-8.6-7-8.6-9.8 0-2.3 1.8-4 3.9-4 1.9 0 3.4 1.1 4.7 2.9 1.3-1.8 2.8-2.9 4.7-2.9 2.1 0 3.9 1.7 3.9 4 0 2.8-2.6 5.6-8.6 9.8z" fill="#fff" stroke="#c81d36" stroke-width="1.2" opacity=".95"/><ellipse cx="88" cy="91" rx="9" ry="15" transform="rotate(-22 88 91)" fill="url(#bbFur)"/><ellipse cx="41" cy="113" rx="15" ry="11.5" fill="url(#bbFur)"/><ellipse cx="83" cy="113" rx="15" ry="11.5" fill="url(#bbFur)"/><g stroke="none" fill="#f7b0b6"><ellipse cx="38" cy="115.5" rx="7.5" ry="6"/><ellipse cx="86" cy="115.5" rx="7.5" ry="6"/><circle cx="31.5" cy="108.5" r="2.4"/><circle cx="37" cy="106.5" r="2.4"/><circle cx="42.5" cy="107.5" r="2.4"/><circle cx="81.5" cy="107.5" r="2.4"/><circle cx="87" cy="106.5" r="2.4"/><circle cx="92.5" cy="108.5" r="2.4"/></g><circle cx="33" cy="22" r="12.5" fill="url(#bbFur)"/><circle cx="87" cy="22" r="12.5" fill="url(#bbFur)"/><circle cx="34" cy="23.5" r="6.5" fill="#f79aa4" stroke="none"/><circle cx="86" cy="23.5" r="6.5" fill="#f79aa4" stroke="none"/><circle cx="60" cy="49" r="32" fill="url(#bbFur)"/><ellipse cx="33" cy="84" rx="9.5" ry="16" transform="rotate(38 33 84)" fill="url(#bbFur)"/><ellipse cx="58" cy="61" rx="15.5" ry="11.5" fill="url(#bbMuz)" stroke="#c9505c" stroke-width="1.2"/><g stroke="none"><ellipse cx="58" cy="55.5" rx="6.2" ry="4.4" fill="#3b0b12"/><ellipse cx="56.3" cy="54.2" rx="2" ry="1.1" fill="#fff" opacity=".7"/><circle cx="46" cy="45" r="4.4" fill="#2a0a0f"/><circle cx="71" cy="45" r="4.4" fill="#2a0a0f"/><circle cx="47.4" cy="43.4" r="1.5" fill="#fff"/><circle cx="72.4" cy="43.4" r="1.5" fill="#fff"/><ellipse cx="37" cy="57" rx="5.5" ry="3.3" fill="#ff8f9c" opacity=".7"/><ellipse cx="81" cy="57" rx="5.5" ry="3.3" fill="#ff8f9c" opacity=".7"/></g><path d="M58 60v3.2M58 63.2q-3.8 3.6-7.6.8M58 63.2q3.8 3.6 7.6.8" fill="none" stroke="#3b0b12" stroke-width="1.8" stroke-linecap="round"/></g></svg></div>
     <button class="icon" id="btnHelp" aria-label="Help">?</button>
     <button class="primary" id="btnExport">Export</button>
   </header>
   <div id="previewWrap">
     <canvas id="preview" width="720" height="1280"></canvas>
     <div id="emptyHint"><div class="t">Let's make a video 🎬</div>
-      <ol><li>Tap <b>＋ Videos &amp; Photos</b> to add clips, and <b>♫ Add Music</b> for songs</li><li>Tap them to put them on the timeline</li><li>Add an <b>Intro</b> and <b>Outro</b></li><li>Tap <b>Export</b> to save your video</li></ol></div>
+      <ol><li>Tap <b>＋ Videos &amp; Photos</b> to add clips, and <b>♫ Add Music</b> for songs</li><li>Tap them to put them on the timeline</li><li>Add an <b>Intro</b> and <b>Outro</b></li><li>Tap <b>Export</b> to save your video</li></ol><div class="love">Buddah Bear Studio · made with love ❤️</div></div>
   </div>
   <div id="transport">
     <div id="time"><b>0:00.0</b> / 0:00.0</div>
@@ -180,7 +189,7 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
 <div class="modal" id="resultOv"><div class="sheet"><h3>Your video is ready 🎉</h3><video id="resVideo" controls playsinline></video><div class="note" id="resInfo"></div>
   <button class="primary" id="resShare">Save to Photos / Share</button><a class="btn" id="resDl" download>Download file</a><button id="resClose">Close</button>
   <p class="note">On iPhone: tap <b>Save to Photos / Share</b>, then choose <b>Save Video</b>.</p></div></div>
-<div class="modal" id="helpOv"><div class="sheet"><h3>How it works</h3>
+<div class="modal" id="helpOv"><div class="sheet"><h3>Buddah Bear Studio – how it works</h3>
   <div class="note" style="font-size:15px;line-height:1.6;color:var(--text)">
   <b>1. Import</b> – Media tab → <b>＋ Videos &amp; Photos</b> opens your Photos library.<br><b>♫ Add Music</b> opens the Files app: pick MP3, M4A, WAV, AIFF… songs. They go straight onto the music track. (Songs from the Apple Music app are copy-protected and can’t be used – save music to Files first, e.g. from iCloud Drive or a download.) If a file is greyed out, try <b>📁 Any file</b>.<br>
   <b>2. Add</b> – tap an item to drop it on the timeline at the white line. Or hold it and drag it onto the timeline.<br>
@@ -189,7 +198,7 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
   <b>5. Camera moves</b> – Edit tab → Pan, Tilt, Dolly In/Out, with strength.<br>
   <b>6. Intro / Outro</b> – one tap adds a title or end card. Edit words &amp; colors in Edit.<br>
   <b>7. Export</b> – makes a video file. Then Save to Photos.<br><br>
-  Your project saves automatically on this phone.</div>
+  Your project saves automatically on this phone.<br><br><span style="color:#ff8a95">Made with love ❤️</span></div>
   <button class="primary" id="helpClose">Got it</button></div></div>
 <script>
 'use strict';
@@ -607,12 +616,12 @@ async function startExport(){layout();if(RT.T<=0){toast('Add some clips first �
 function finishExport(){drawFrame(RT.T);setTimeout(()=>{try{if(RT.rec&&RT.rec.state!=='inactive')RT.rec.stop();}catch(e){}},400);}
 $('#expCancel').onclick=()=>{RT.expCancel=true;pause();try{if(RT.rec&&RT.rec.state!=='inactive')RT.rec.stop();else{S.exporting=false;$('#exportOv').classList.remove('on');}}catch(e){}};
 function showResult(blob,type){const ext=type.includes('mp4')?'mp4':'webm';const d=new Date();const p2=n=>String(n).padStart(2,'0');
-  const name=`PocketStudio-${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}.${ext}`;
+  const name=`buddah-bear-studio-${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}.${ext}`;
   if(RT.resUrl)URL.revokeObjectURL(RT.resUrl);RT.resUrl=URL.createObjectURL(blob);RT.resFile=new File([blob],name,{type});
   $('#resVideo').src=RT.resUrl;$('#resDl').href=RT.resUrl;$('#resDl').download=name;$('#resInfo').textContent=`${name} · ${(blob.size/1048576).toFixed(1)} MB · ${fmt(RT.T)}`;
   let canShare=false;try{canShare=!!(navigator.canShare&&navigator.canShare({files:[RT.resFile]}));}catch(e){}$('#resShare').style.display=canShare?'':'none';
   $('#resultOv').classList.add('on');window.__lastExport={size:blob.size,type,name};}
-$('#resShare').onclick=async()=>{try{await navigator.share({files:[RT.resFile],title:'My video'});}catch(e){if(e&&e.name!=='AbortError')toast('Sharing didn\'t work – try Download');}};
+$('#resShare').onclick=async()=>{try{await navigator.share({files:[RT.resFile],title:'Made with Buddah Bear Studio'});}catch(e){if(e&&e.name!=='AbortError')toast('Sharing didn\'t work – try Download');}};
 $('#resClose').onclick=()=>{$('#resultOv').classList.remove('on');$('#resVideo').pause();};
 
 /* ---------------- misc wiring ---------------- */
